@@ -1,0 +1,94 @@
+//
+//  ViewController.swift
+//  QuizApp
+//
+//  Created by Osama on 01/04/2020.
+//  Copyright © 2020 Osama. All rights reserved.
+//
+
+import UIKit
+
+struct QuizModel {
+    var question:String!
+    var options = [String]()
+}
+
+class ViewController: UIViewController {
+    
+    @IBOutlet weak var tableView: UITableView!
+    
+    let quizModel = [
+    QuizModel(question: "What is the term used for describing the judgemental or commonsense part of problem solving?", options: ["Heuristic","Critical","Value Based","Analytical"]),
+    QuizModel(question: "An operation that will increase the length of a list is", options: ["Insert","Look-up","Modify","All of the above"]),
+    QuizModel(question: "Data security threats include", options: ["Hardware failure","Privacy invasion","Fraudulent manipulation of data","All of the above"]),
+    QuizModel(question: "Which of the following is a database administrator's function", options: ["Database design","Backing up the database","Performance Monitoring","User coordination"]),
+    QuizModel(question: "When an activity doesn't exist in memory it is in.", options: ["Starting state","Running state","Loading state","Inexistent state"])
+    ]
+    
+    var dataSource = [QuizModel]()
+    var currentQuestionNumber = 0
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupTableData()
+        registerCell()
+        // Do any additional setup after loading the view.
+    }
+    
+    func registerCell() {
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cellId")
+    }
+    
+    func setupTableData() {
+        dataSource = [quizModel[currentQuestionNumber]]
+    }
+
+}
+
+extension ViewController: UITableViewDelegate, UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+       return dataSource.count
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if dataSource.isEmpty {
+            return 0
+        } else {
+            return dataSource[section].options.count
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cellId", for: indexPath)
+        cell.textLabel?.text = dataSource[indexPath.section].options[indexPath.row]
+        cell.accessoryType = .none
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return dataSource.isEmpty ? nil : dataSource[section].question
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        guard let cell = tableView.cellForRow(at: indexPath) else {return}
+        cell.accessoryType = .checkmark
+        currentQuestionNumber += 1
+        if currentQuestionNumber == 5 {
+            dataSource.removeAll()
+            tableView.deleteSections(IndexSet(integer: 0), with: .automatic)
+            let alertController = UIAlertController(title: "Congratulations!", message: "You've completed the quiz.", preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(alertController, animated: true, completion: nil)
+            return
+        } else {
+            dataSource[0] = quizModel[currentQuestionNumber]
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.tableView.reloadData()
+            }
+        }
+        
+    }
+}
+
